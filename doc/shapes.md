@@ -13,7 +13,7 @@ retrieved from the offsets into the file):
   32-bit values:
 
   - A version header (`0x31 0x2E 0x31 0x30` for my version,
-    TODO)
+    1.10 stored little-endian)
   - The count of frames that this unit type contains (e.g. `0x82`
     = 130 frames for the `dude` type, note this is unsigned `u32`.)
 

@@ -44,7 +44,7 @@ impl UnitType {
 
         let mut frames: Vec<Frame> = vec![];
         for i in 0..frame_count {
-            let frame = Frame::from_file_offset(file, offset)?;
+            let frame = Frame::from_file_offset(file, offset, start_unit_offset)?;
             frames.push(frame);
         }
         Ok(Self {

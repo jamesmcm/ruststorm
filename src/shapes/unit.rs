@@ -2,11 +2,11 @@ use super::errors::ShapesFileError;
 use super::frame::Frame;
 use std::io::prelude::*;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct UnitType {
-    version: u32, //0x30312E31
-    frame_count: u32,
-    frames: Vec<Frame>,
+    pub version: u32, //0x30312E31
+    pub frame_count: u32,
+    pub frames: Vec<Frame>,
 }
 
 impl UnitType {
@@ -52,13 +52,5 @@ impl UnitType {
             frame_count,
             frames,
         })
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
     }
 }

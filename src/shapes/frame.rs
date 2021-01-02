@@ -4,11 +4,11 @@ use std::io::SeekFrom;
 
 use byteorder::{LittleEndian, ReadBytesExt};
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Frame {
-    offset_from_unit: u32,
-    color_table: u32, // Always zero
-    data: FrameData,
+    pub offset_from_unit: u32,
+    pub color_table: u32, // Always zero
+    pub data: FrameData,
 }
 
 impl Frame {
@@ -41,8 +41,8 @@ impl Frame {
     }
 }
 
-#[derive(Debug, PartialEq)]
-struct FrameData {
+#[derive(Debug, PartialEq, Clone)]
+pub struct FrameData {
     height: u16,
     width: u16,
     origin_x: u16,
@@ -70,22 +70,43 @@ impl FrameData {
         let maximum_y = file.read_i32::<LittleEndian>()?;
 
         let mut row: u16 = 0;
+        let mut col: u16 = 0;
         let mut pixel_data: Vec<Vec<u8>> = vec![vec![0; width as usize]; height as usize];
         while row < height {
             let packet_type = file.read_u8()?;
 
             match packet_type {
-                0 => { // Fill remaining part of row with 0xFF
+                0 => {
+                    // Fill remaining part of row with 0xFF
+                    for _i in 0..(width - col) {
+                        pixel_data[row as usize].push(0xFF);
+                    }
+                    col = 0;
+                    row += 1;
                 }
-                1 => { // Read u8 and write that many 0XFF to current row, do not advance row
+                1 => {
+                    // Read u8 and write that many 0XFF to current row, do not advance row
+                    let skipn = file.read_u8()? as u16;
+                    for _i in 0..(skipn.min(width - col)) {
+                        pixel_data[row as usize].push(0xFF);
+                    }
                 }
-                x if x & 1 != 0 => { // Write next x >> 1 bytes as-is - do not advance row
+                x if x & 1 != 0 => {
+                    // Write next x >> 1 bytes as-is - do not advance row
+                    let len = (x >> 1) as u16;
+                    for _i in 0..(len.min(width - col)) {
+                        pixel_data[row as usize].push(file.read_u8()?);
+                    }
                 }
-                x => { // Runlength encoding, read next u8 and write it x times
+                x => {
+                    // Runlength encoding, read next u8 and write it x >> 1 times
+                    let len = (x >> 1) as u16;
+                    let byte = file.read_u8()?;
+                    for _i in 0..(len.min(width - col)) {
+                        pixel_data[row as usize].push(byte);
+                    }
                 }
             }
-
-            break;
         }
         Ok(Self {
             height,
@@ -98,13 +119,5 @@ impl FrameData {
             maximum_y,
             data: pixel_data,
         })
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
     }
 }

@@ -67,6 +67,8 @@ mod tests {
         );
         Ok(())
     }
+    // Requires full shapes file
+    #[ignore]
     #[test]
     fn load_all_shapes() -> Result<(), ShapesFileError> {
         let mut path = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
@@ -75,6 +77,8 @@ mod tests {
         assert_eq!(shapes.units.len(), 119);
         Ok(())
     }
+    // Requires full shapes file
+    #[ignore]
     #[test]
     fn check_num_dude_frames() -> Result<(), ShapesFileError> {
         let mut path = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
